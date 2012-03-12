@@ -36,13 +36,17 @@ class ControlableAirplane(FlyingObject):
     def __init__(self,name,position=vector.Threevec(),velocity=vector.Threevec()):
         FlyingObject.__init__(self,name,position,velocity)
 
+        heading = math.pi/2.0-velocity.phi
+        if heading<0.0:
+            heading+=2.0*math.pi
+
         # Set the command info from current parameters
-        self.commandHeading = velocity.phi
+        self.commandHeading = heading
         self.commandSpeed = abs(velocity)
         self.commandAltitude = position.z
 
         # Set the desired info from current parameters, except speed.
-        self.desiredHeading = velocity.phi
+        self.desiredHeading = heading
         self.desiredSpeed = ControlableAirplane.vcruise
         self.desiredAltitude = ControlableAirplane.alt_cruise
 
@@ -65,7 +69,7 @@ class ControlableAirplane(FlyingObject):
         return self.desiredSpeed
 
     def getDesiredAltitude(self):
-        return self.desiredAlititude
+        return self.desiredAltitude
 
     def executeTimestep(self,deltat):
         speed = self.commandSpeed
@@ -84,7 +88,7 @@ class ControlableAirplane(FlyingObject):
         elif altitude<ControlableAirplane.alt_min:
             altitude = ControlableAirplane.alt_min
 
-        current_heading = self.velocity.phi
+        current_heading = math.pi/2.0-self.velocity.phi
         # headings are between 0 and 2pi
         if current_heading < 0.0:
             current_heading += 2.0*math.pi
@@ -100,7 +104,7 @@ class ControlableAirplane(FlyingObject):
         else:
             tilt_set = -ControlableAirplane.max_tilt
 
-        phi_set = current_heading
+        heading_set = current_heading
         delta_heading = self.commandHeading - current_heading
 
         # Adjust turn so it can go through 2pi
@@ -112,13 +116,13 @@ class ControlableAirplane(FlyingObject):
         max_delta_heading = ControlableAirplane.turn_rate*deltat
 
         if delta_heading > max_delta_heading:
-            phi_set += max_delta_heading
+            heading_set += max_delta_heading
         elif delta_heading < max_delta_heading and delta_heading > -max_delta_heading:
-            phi_set += delta_heading
+            heading_set += delta_heading
         else:
-            phi_set -= max_delta_heading
+            heading_set -= max_delta_heading
 
-        new_velocity = vector.sphvec(speed,math.pi/2.0-tilt_set,phi_set)
+        new_velocity = vector.sphvec(speed,math.pi/2.0-tilt_set,math.pi/2.0-heading_set)
 
         new_position = self.position+(self.velocity/2.0+new_velocity/2.0)*deltat
 

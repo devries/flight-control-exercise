@@ -2,7 +2,10 @@
 import airplane
 import vector
 import math
+import flight_control
 import Tkinter
+import numpy.random as random
+import sys
 
 RADAR_RADIUS = 70000.0 # range of radar
 
@@ -22,7 +25,7 @@ def check_proximity(airplane_list):
             if abs(dist)<100.0:
                 crash_list.append(o1)
                 crash_list.append(o2)
-            elif abs(dist.z)<200.0 and (dist.x**2+dist.y**2)<1000.0**2:
+            elif abs(dist.z)<200.0 and (dist.x**2+dist.y**2)<10000.0**2:
                 warning_list.append(o1)
                 warning_list.append(o2)
 
@@ -32,13 +35,88 @@ def executeTimestep(airplane_list,deltat):
     for o in airplane_list:
         o.executeTimestep(deltat)
 
+def createAirplaneList():
+    names = createNameList()
+    p1, p2 = generateCollidingPair(0.0,10000.0,8000.0,names.pop(),names.pop(),200.0)
+    p3, p4 = generateCollidingPair(0.0,0.0,8000.0,names.pop(),names.pop(),250.0)
+    p5, p6 = generateCollidingPair(10000,0.0,7000.0,names.pop(),names.pop(),300.0)
+    p7 = generateRandomPlane(names.pop(),8000.0)
+    p8 = generateRandomPlane(names.pop(),7000.0)
+    p9 = generateRandomPlane(names.pop(),6000.0)
+    p10 = generateRandomPlane(names.pop(),8000.0)
+
+    return [p1,p2,p3,p4,p5,p6,p7,p8,p9,p10]
+    
+def generateCollidingPair(x,y,z,name1,name2,tcollision):
+    """Create a set of airplanes which will collide at position x, y, z in tcollision seconds"""
+    crashpos = vector.recvec(x,y,z)
+
+    phi1 = -math.pi+random.random_sample()*2.0*math.pi
+    phi2 = -math.pi+random.random_sample()*2.0*math.pi
+    v = airplane.ControlableAirplane.vcruise
+
+    v1 = vector.sphvec(v,math.pi/2.0,phi1)
+    v2 = vector.sphvec(v,math.pi/2.0,phi2)
+    pos1 = crashpos-v1*tcollision
+    pos2 = crashpos-v2*tcollision
+
+    airplane1 = airplane.ControlableAirplane(name1,pos1,v1)
+    airplane2 = airplane.ControlableAirplane(name2,pos2,v2)
+
+    return airplane1, airplane2
+
+def generateRandomPlane(name,altitude):
+    phi = -math.pi+random.random_sample()*2.0*math.pi
+    dir_flight = phi+3.0*math.pi/4.0+random.random_sample()*math.pi/2.0
+
+    position = vector.cylvec(70000.0,phi,altitude)
+    velocity = vector.sphvec(airplane.ControlableAirplane.vcruise,math.pi/2.0,dir_flight)
+
+    return airplane.ControlableAirplane(name,position,velocity)
+
+def createNameList():
+    callsigns = ['United','American','Delta','N']
+    names=[]
+    for i in range(10000):
+        names.append(callsigns[i%len(callsigns)]+str(i))
+
+    random.shuffle(names)
+    return names
+
+def scoreGame(airplane_list):
+    score = 0
+    for a in airplane_list:
+        score+=1000 # Airplane is still there
+        print a.getName(),
+        v = a.getVelocity()
+        p = a.getPosition()
+        heading = math.pi/2.0-v.phi
+        if abs(heading-a.getDesiredHeading())<0.01 or abs(abs(heading-a.getDesiredHeading())-2.0*math.pi)<0.01:
+            score+=500 # Airplane on heading
+            print "on heading",
+
+        if abs(p.z-a.getDesiredAltitude())<100.0:
+            score+=250 # Airplane at altitude
+            print "at altitude",
+        
+        if abs(abs(v)-a.getDesiredSpeed())<1.0:
+            score+=250 # Airplane at speed
+            print "at speed",
+
+        print
+
+    print "Your score:",score
+
 class GuiClass(object):
     def __init__(self):
         self.root = Tkinter.Tk()
         self.periodicCount = 0
-        self.airplane_list = [airplane.ControlableAirplane("Test Craft",vector.recvec(20000.0,20000.0,4000.0),vector.recvec(250.0,0.0,0.0))]
+        airplane_names = createNameList()
+        self.airplane_list = createAirplaneList()
         self.warning_list = []
         self.crash_list = []
+        self.flightControl = flight_control.FlightController()
+        self.flightControl.executeControl(list(self.airplane_list))
         self.canvas = Tkinter.Canvas(self.root,height=300,width=300)
         self.canvas.pack(fill=Tkinter.BOTH,expand=True)
         self.root.bind("<Configure>",self.drawCanvas)
@@ -57,9 +135,17 @@ class GuiClass(object):
         if self.periodicCount%10==0:
             self.drawCanvas()
 
+        for p in self.crash_list:
+            print p.getName(),"crashed"
+            self.airplane_list.remove(p)
+
         if self.periodicCount%100==0:
-            # insert control code here
-            pass
+            print (6000-self.periodicCount)/10,"seconds remain."
+            self.flightControl.executeControl(list(self.airplane_list))
+
+        if self.periodicCount==6000:
+            scoreGame(self.airplane_list)
+            sys.exit(0)
 
         self.root.after(100,self.periodicExecution)
         
@@ -93,8 +179,8 @@ class GuiClass(object):
                     color = "orange"
 
                 self.canvas.create_oval(x_pos-2,y_pos-2,x_pos+2,y_pos+2,fill=color)
-                self.canvas.create_text(x_pos,y_pos,anchor=Tkinter.SW,text="  "+o.getName())
-                self.canvas.create_text(x_pos,y_pos,anchor=Tkinter.NW,text="  %.fm"%pos.z)
+                self.canvas.create_text(x_pos,y_pos,anchor=Tkinter.SW,fill=color,text="  "+o.getName())
+                self.canvas.create_text(x_pos,y_pos,anchor=Tkinter.NW,fill=color,text="  %.fm"%pos.z)
 
 if __name__=="__main__":
     main()
