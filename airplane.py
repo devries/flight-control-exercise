@@ -9,21 +9,29 @@ class FlyingObject(object):
         self.velocity = velocity
 
     def getPosition(self):
-        return self.position
+        """The position of the aircraft is returned as a vector.Threevec.
+        The components are all in meters. The x-direction is East, the 
+        y-direction is North, and the z-direction is altitude from sealevel."""
+        return self.position.copy()
 
     def getVelocity(self):
-        return self.velocity
+        """The velocity of the aircraft is returned as a vector.Threevec.
+        The components are all in meters per second. The x-direction is
+        East, the y-direction is North, and the z-direction is up."""
+        return self.velocity.copy()
 
-    def isControlable(self):
+    def isControllable(self):
         return False
 
     def getName(self):
+        """The unique name of the aircraft is returned by this method."""
         return self.name
 
     def executeTimestep(self,deltat):
         self.position += self.velocity*deltat
 
-class ControlableAirplane(FlyingObject):
+class ControllableAirplane(FlyingObject):
+    """An airplane which is controllable using the flight control system."""
     vmin = 215.0 # meters per second
     vmax = 250.0 # meters per second
     vcruise = 230.0 # Meters per second
@@ -47,46 +55,75 @@ class ControlableAirplane(FlyingObject):
 
         # Set the desired info from current parameters, except speed.
         self.desiredHeading = heading
-        self.desiredSpeed = ControlableAirplane.vcruise
-        self.desiredAltitude = ControlableAirplane.alt_cruise
+        self.desiredSpeed = ControllableAirplane.vcruise
+        self.desiredAltitude = ControllableAirplane.alt_cruise
 
-    def isControlable(self):
+    def isControllable(self):
+        """This will return True if you can send commands to the plane."""
         return True
 
     def sendHeading(self,heading):
+        """Send the heading you would like the plane to turn to. The plane is
+        limited to turn at a rate of 1.5 degrees per second. Note that the
+        heading is given in radians with 0.0 being North, pi/2 is East, pi
+        is South, and 3pi/2 is West."""
         self.commandHeading = heading
 
     def sendAltitude(self,altitude):
+        """Send the altitude you would like the airplane to reach in meters. 
+        Note that the airplane is limited to an up or down pitch of up to 7.5
+        degrees, which means its maximum rate of altitude change is its speed
+        times the sine of 7.5 degrees. The airplane is limited to altitudes
+        between 2,000 and 10,000 meters. If you ask it to exceed its maximum
+        altitude or drop below its minimum altitude, it will stay at the
+        closest safe altitude."""
         self.commandAltitude = altitude
 
     def sendSpeed(self,speed):
+        """Send the speed you would like the airplane to travel in meters per
+        second. Note that the airplane is limited to speeds between 215 and
+        250 meters per second. If you ask for a speed outside of this range, 
+        the airplane will travel at the closest safe speed."""
         self.commandSpeed = speed
 
     def getDesiredHeading(self):
+        """The desired heading of the aircraft is returned by this method
+        (in radians, with 0 being North and pi/2 being East).
+        The airplane should resume this heading after avoiding other 
+        aircraft."""
         return self.desiredHeading
 
     def getDesiredSpeed(self):
+        """The desired speed of the aircraft is returned by this method in
+        meters per second. The aircraft should resume this speed after
+        avoiding other aircraft."""
         return self.desiredSpeed
 
     def getDesiredAltitude(self):
+        """The desired altitude of the aircraft is returned by this method in
+        meters. The aircraft should resume this altitude after avoiding other
+        aircraft."""
         return self.desiredAltitude
 
     def executeTimestep(self,deltat):
+        """This method is called by the simulator to advance the aircraft
+        through time by an amount deltat (in seconds). The aircraft tries
+        to acommodate the commands given to it."""
         speed = self.commandSpeed
 
-        if speed>ControlableAirplane.vmax:
-            speed = ControlableAirplane.vmax
-        elif speed<ControlableAirplane.vmin:
-            speed = ControlableAirplane.vmin
+        if speed>ControllableAirplane.vmax:
+            speed = ControllableAirplane.vmax
+        elif speed<ControllableAirplane.vmin:
+            speed = ControllableAirplane.vmin
 
-        max_delta_altitude = speed*math.sin(ControlableAirplane.max_tilt)*deltat
+        max_delta_altitude = speed*math.sin(ControllableAirplane.max_tilt)*deltat
 
         altitude = self.commandAltitude
 
-        if altitude>ControlableAirplane.alt_max:
-            altitude = ControlableAirplane.alt_max
-        elif altitude<ControlableAirplane.alt_min:
-            altitude = ControlableAirplane.alt_min
+        if altitude>ControllableAirplane.alt_max:
+            altitude = ControllableAirplane.alt_max
+        elif altitude<ControllableAirplane.alt_min:
+            altitude = ControllableAirplane.alt_min
 
         current_heading = math.pi/2.0-self.velocity.phi
         # headings are between 0 and 2pi
@@ -98,11 +135,11 @@ class ControlableAirplane(FlyingObject):
         delta_altitude = altitude - current_altitude
 
         if delta_altitude > max_delta_altitude:
-            tilt_set = ControlableAirplane.max_tilt
+            tilt_set = ControllableAirplane.max_tilt
         elif delta_altitude < max_delta_altitude and delta_altitude > -max_delta_altitude:
             tilt_set = math.asin(delta_altitude/speed/deltat)
         else:
-            tilt_set = -ControlableAirplane.max_tilt
+            tilt_set = -ControllableAirplane.max_tilt
 
         heading_set = current_heading
         delta_heading = self.commandHeading - current_heading
@@ -113,7 +150,7 @@ class ControlableAirplane(FlyingObject):
         elif delta_heading < -math.pi:
             delta_heading += 2.0*math.pi
 
-        max_delta_heading = ControlableAirplane.turn_rate*deltat
+        max_delta_heading = ControllableAirplane.turn_rate*deltat
 
         if delta_heading > max_delta_heading:
             heading_set += max_delta_heading

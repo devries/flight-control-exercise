@@ -125,7 +125,12 @@ class Threevec(numbers.Number):
         yield self.x
         yield self.y
         yield self.z
-    
+   
+    def copy(self):
+        """Return a copy of the current vector."""
+        result = Threevec(self.x,self.y,self.z)
+        return result
+
     @property
     def rho(self):
         """The cylindrical radius component. Equal to the square root of the

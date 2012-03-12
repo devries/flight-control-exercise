@@ -55,15 +55,15 @@ def generateCollidingPair(x,y,z,name1,name2,tcollision):
 
     phi1 = -math.pi+random.random_sample()*2.0*math.pi
     phi2 = -math.pi+random.random_sample()*2.0*math.pi
-    v = airplane.ControlableAirplane.vcruise
+    v = airplane.ControllableAirplane.vcruise
 
     v1 = vector.sphvec(v,math.pi/2.0,phi1)
     v2 = vector.sphvec(v,math.pi/2.0,phi2)
     pos1 = crashpos-v1*tcollision
     pos2 = crashpos-v2*tcollision
 
-    airplane1 = airplane.ControlableAirplane(name1,pos1,v1)
-    airplane2 = airplane.ControlableAirplane(name2,pos2,v2)
+    airplane1 = airplane.ControllableAirplane(name1,pos1,v1)
+    airplane2 = airplane.ControllableAirplane(name2,pos2,v2)
 
     return airplane1, airplane2
 
@@ -72,9 +72,9 @@ def generateRandomPlane(name,altitude):
     dir_flight = phi+3.0*math.pi/4.0+random.random_sample()*math.pi/2.0
 
     position = vector.cylvec(70000.0,phi,altitude)
-    velocity = vector.sphvec(airplane.ControlableAirplane.vcruise,math.pi/2.0,dir_flight)
+    velocity = vector.sphvec(airplane.ControllableAirplane.vcruise,math.pi/2.0,dir_flight)
 
-    return airplane.ControlableAirplane(name,position,velocity)
+    return airplane.ControllableAirplane(name,position,velocity)
 
 def createNameList():
     callsigns = ['United','American','Delta','N']
