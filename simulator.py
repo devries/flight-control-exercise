@@ -25,7 +25,7 @@ def check_proximity(airplane_list):
             if abs(dist)<100.0:
                 crash_list.append(o1)
                 crash_list.append(o2)
-            elif abs(dist.z)<200.0 and (dist.x**2+dist.y**2)<10000.0**2:
+            elif abs(dist.z)<600.0 and (dist.x**2+dist.y**2)<10000.0**2:
                 if not o1 in warning_list:
                     warning_list.append(o1)
                 if not o2 in warning_list:

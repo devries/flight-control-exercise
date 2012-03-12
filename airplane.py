@@ -35,7 +35,7 @@ class ControllableAirplane(FlyingObject):
     vmin = 215.0 # meters per second
     vmax = 250.0 # meters per second
     vcruise = 230.0 # Meters per second
-    alt_min = 2000.0 # meters
+    alt_min = 6000.0 # meters
     alt_max = 10000.0 # meters
     alt_cruise = 8000.0 # meters
     turn_rate = 1.5 * math.pi/180.0 # radians per second
@@ -74,7 +74,7 @@ class ControllableAirplane(FlyingObject):
         Note that the airplane is limited to an up or down pitch of up to 7.5
         degrees, which means its maximum rate of altitude change is its speed
         times the sine of 7.5 degrees. The airplane is limited to altitudes
-        between 2,000 and 10,000 meters. If you ask it to exceed its maximum
+        between 6,000 and 10,000 meters. If you ask it to exceed its maximum
         altitude or drop below its minimum altitude, it will stay at the
         closest safe altitude."""
         self.commandAltitude = altitude
