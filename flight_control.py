@@ -14,4 +14,7 @@ class FlightController(object):
         """Every 10 seconds a list (airplane_list) of flying objects will be
         passed to you. You can find the positions of the airplanes and issue
         flight control commands to them."""
-        pass
+        for a in airplane_list:
+            a.sendHeading(a.getDesiredHeading())
+            a.sendAltitude(a.getDesiredAltitude())
+            a.sendSpeed(a.getDesiredSpeed())

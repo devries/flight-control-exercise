@@ -26,8 +26,10 @@ def check_proximity(airplane_list):
                 crash_list.append(o1)
                 crash_list.append(o2)
             elif abs(dist.z)<200.0 and (dist.x**2+dist.y**2)<10000.0**2:
-                warning_list.append(o1)
-                warning_list.append(o2)
+                if not o1 in warning_list:
+                    warning_list.append(o1)
+                if not o2 in warning_list:
+                    warning_list.append(o2)
 
     return crash_list, warning_list
 
@@ -83,8 +85,9 @@ def createNameList():
     random.shuffle(names)
     return names
 
-def scoreGame(airplane_list):
+def scoreGame(airplane_list,penalties):
     score = 0
+    print penalties,"points to deduct for penalties."
     for a in airplane_list:
         score+=1000 # Airplane is still there
         print a.getName(),
@@ -105,12 +108,14 @@ def scoreGame(airplane_list):
 
         print
 
-    print "Your score:",score
+    print "Your score:",score-penalties
 
 class GuiClass(object):
     def __init__(self):
         self.root = Tkinter.Tk()
         self.periodicCount = 0
+        self.penalties = 0
+        self.count_warnings = False
         airplane_names = createNameList()
         self.airplane_list = createAirplaneList()
         self.warning_list = []
@@ -136,15 +141,26 @@ class GuiClass(object):
             self.drawCanvas()
 
         for p in self.crash_list:
-            print p.getName(),"crashed"
+            print p.getName(),"crashed. 1000 point penalty"
             self.airplane_list.remove(p)
+            self.penalties+=1000
+
+        if self.periodicCount==1000:
+            self.count_warnings = True
+            print "Near-Collisions are now penalized."
 
         if self.periodicCount%100==0:
             print (6000-self.periodicCount)/10,"seconds remain."
             self.flightControl.executeControl(list(self.airplane_list))
+            if self.count_warnings:
+                n = len(self.warning_list)
+                if n>0:
+                    print n,"airplanes are too close."
+                    print n*100,"point penalty."
+                    self.penalties+=100*n
 
         if self.periodicCount==6000:
-            scoreGame(self.airplane_list)
+            scoreGame(self.airplane_list,self.penalties)
             sys.exit(0)
 
         self.root.after(100,self.periodicExecution)
