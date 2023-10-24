@@ -3,7 +3,7 @@ import airplane
 import vector
 import math
 import flight_control
-import Tkinter
+import tkinter
 import numpy.random as random
 import sys
 
@@ -89,32 +89,32 @@ def createNameList():
 
 def scoreGame(airplane_list,penalties):
     score = 0
-    print penalties,"points to deduct for penalties."
+    print(penalties,"points to deduct for penalties.")
     for a in airplane_list:
         score+=1000 # Airplane is still there
-        print a.getName(),
+        print(a.getName(), end=' ')
         v = a.getVelocity()
         p = a.getPosition()
         heading = math.pi/2.0-v.phi
         if abs(heading-a.getDesiredHeading())<0.01 or abs(abs(heading-a.getDesiredHeading())-2.0*math.pi)<0.01:
             score+=500 # Airplane on heading
-            print "on heading",
+            print("on heading", end=' ')
 
         if abs(p.z-a.getDesiredAltitude())<100.0:
             score+=250 # Airplane at altitude
-            print "at altitude",
+            print("at altitude", end=' ')
         
         if abs(abs(v)-a.getDesiredSpeed())<1.0:
             score+=250 # Airplane at speed
-            print "at speed",
+            print("at speed", end=' ')
 
-        print
+        print()
 
-    print "Your score:",score-penalties
+    print("Your score:",score-penalties)
 
 class GuiClass(object):
     def __init__(self):
-        self.root = Tkinter.Tk()
+        self.root = tkinter.Tk()
         self.periodicCount = 0
         self.penalties = 0
         self.count_warnings = False
@@ -124,8 +124,8 @@ class GuiClass(object):
         self.crash_list = []
         self.flightControl = flight_control.FlightController()
         self.flightControl.executeControl(list(self.airplane_list))
-        self.canvas = Tkinter.Canvas(self.root,height=300,width=300)
-        self.canvas.pack(fill=Tkinter.BOTH,expand=True)
+        self.canvas = tkinter.Canvas(self.root,height=300,width=300)
+        self.canvas.pack(fill=tkinter.BOTH,expand=True)
         self.root.bind("<Configure>",self.drawCanvas)
         self.drawCanvas()
 
@@ -143,22 +143,22 @@ class GuiClass(object):
             self.drawCanvas()
 
         for p in self.crash_list:
-            print p.getName(),"crashed. 1000 point penalty"
+            print(p.getName(),"crashed. 1000 point penalty")
             self.airplane_list.remove(p)
             self.penalties+=1000
 
         if self.periodicCount==1000:
             self.count_warnings = True
-            print "Near-Collisions are now penalized."
+            print("Near-Collisions are now penalized.")
 
         if self.periodicCount%100==0:
-            print (6000-self.periodicCount)/10,"seconds remain."
+            print((6000-self.periodicCount)/10,"seconds remain.")
             self.flightControl.executeControl(list(self.airplane_list))
             if self.count_warnings:
                 n = len(self.warning_list)
                 if n>0:
-                    print n,"airplanes are too close."
-                    print n*100,"point penalty."
+                    print(n,"airplanes are too close.")
+                    print(n*100,"point penalty.")
                     self.penalties+=100*n
 
         if self.periodicCount==6000:
@@ -169,7 +169,7 @@ class GuiClass(object):
         
 
     def drawCanvas(self,event=None):
-        self.canvas.delete(Tkinter.ALL)
+        self.canvas.delete(tkinter.ALL)
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
         circ_radiusa = (width-10)/2
@@ -197,8 +197,8 @@ class GuiClass(object):
                     color = "orange"
 
                 self.canvas.create_oval(x_pos-2,y_pos-2,x_pos+2,y_pos+2,fill=color)
-                self.canvas.create_text(x_pos,y_pos,anchor=Tkinter.SW,fill=color,text="  "+o.getName())
-                self.canvas.create_text(x_pos,y_pos,anchor=Tkinter.NW,fill=color,text="  %.fm"%pos.z)
+                self.canvas.create_text(x_pos,y_pos,anchor=tkinter.SW,fill=color,text="  "+o.getName())
+                self.canvas.create_text(x_pos,y_pos,anchor=tkinter.NW,fill=color,text="  %.fm"%pos.z)
 
 if __name__=="__main__":
     main()

@@ -63,7 +63,7 @@ class Threevec(numbers.Number):
         else:
             raise TypeError("A cross product can only be calculated between two Threevecs")
 
-    def __div__(self,other):
+    def __truediv__(self,other):
         """Division of a vector by a scalar."""
         if isinstance(other,numbers.Real):
             result = self*(1.0/other)

@@ -5,7 +5,8 @@ This was an assignment as part of a class I taught at CSU Stanislaus to help
 familiarize the students with python in a fun way, as well as a chance to
 think about how to solve complex problems. In this exercise the students have
 to develop a flight control systems which sends instructions to airplanes so
-that they avoid each other in the air.
+that they avoid each other in the air, but it seems now to be used to help
+train AI models.
 
 There are two simulators for watching the result of the exercise:
 `simulator.py` will run a real-time simulation of the airplanes showing their
