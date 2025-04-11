@@ -6,6 +6,7 @@ import flight_control
 import tkinter
 import numpy.random as random
 import sys
+import itertools
 
 RADAR_RADIUS = 70000.0 # range of radar
 
@@ -18,20 +19,18 @@ def check_proximity(airplane_list):
     crash_list = []
     remaining_list = list(airplane_list)
 
-    for i in range(len(remaining_list)):
-        o1 = remaining_list.pop()
-        for o2 in remaining_list:
-            dist = o2.getPosition()-o1.getPosition()
-            if abs(dist)<100.0:
-                if not o1 in crash_list:
-                    crash_list.append(o1)
-                if not o2 in crash_list:
-                    crash_list.append(o2)
-            elif abs(dist.z)<600.0 and (dist.x**2+dist.y**2)<10000.0**2:
-                if not o1 in warning_list:
-                    warning_list.append(o1)
-                if not o2 in warning_list:
-                    warning_list.append(o2)
+    for o1, o2 in itertools.combinations(remaining_list, 2):
+        dist = o2.getPosition()-o1.getPosition()
+        if abs(dist)<100.0:
+            if o1 not in crash_list:
+                crash_list.append(o1)
+            if o2 not in crash_list:
+                crash_list.append(o2)
+        elif abs(dist.z)<600.0 and (dist.x**2+dist.y**2)<10000.0**2:
+            if o1 not in warning_list:
+                warning_list.append(o1)
+            if o2 not in warning_list:
+                warning_list.append(o2)
 
     return crash_list, warning_list
 
